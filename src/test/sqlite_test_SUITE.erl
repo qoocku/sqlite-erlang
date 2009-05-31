@@ -5,7 +5,7 @@
 %%%
 %%% Created :  4 Sep 2008 by Tee Teoh <tteoh@teemac.ott.cti.com>
 %%%-------------------------------------------------------------------
--module(sqlite_test_SUITE).
+-module(test.sqlite_test_SUITE).
 
 %% Note: This directive should only be used in test suites.
 -compile(export_all).

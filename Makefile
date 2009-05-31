@@ -1,6 +1,15 @@
-ERL=erl
-OTP_TOP=/opt/local/lib/erlang/lib
-PLT_SRC=$(OTP_TOP)/kernel-2.12.4/ebin $(OTP_TOP)/stdlib-1.15.4/ebin/ $(OTP_TOP)/crypto-1.5.2.1/ebin $(OTP_TOP)/compiler-4.5.4/ebin $(OTP_TOP)/hipe-3.6.8/ebin/ $(OTP_TOP)/syntax_tools-1.5.5/ebin $(OTP_TOP)/hipe-3.6.8/ebin ebin
+VERSION=1.0.0
+
+ERL=$(shell which erl)
+ERLC=$(shell which erlc)
+BASE_PROG='io:format("~s~n", [code:lib_dir()])'
+BASE=$(shell erl -eval $(BASE_PROG) -s init stop -noshell)
+
+DEPS="[kernel, stdlib, crypto, compiler, syntax_tools, hipe]"
+PROG='lists:foreach(fun(M) -> io:format("~s", [code:lib_dir(M)]) end)'
+PATHS=`erl -eval '$(PROG)' -s init stop -noshell`
+
+INSTALL_DEST=$(BASE)/sqlite-$(VERSION)
 
 all: compile docs
 
@@ -8,8 +17,14 @@ compile:
 	$(ERL) -make
 	cd priv && make
 
+install: compile
+	mkdir -p $(INSTALL_DEST)/ebin
+	install ebin/sqlite.beam ebin/sqlite_lib.beam $(INSTALL_DEST)/ebin
+	mkdir -p $(INSTALL_DEST)/priv
+	install priv/sqlite_port $(INSTALL_DEST)/priv
+
 static:
-	dialyzer --build_plt --output_plt sqlite.plt -r ebin $(PLT_SRC)
+	dialyzer --build_plt --output_plt sqlite.plt -r ebin $(PATHS)
 
 clean:
 	- rm -rf ebin/*.beam doc/* sqlite.plt src/test/*.beam
