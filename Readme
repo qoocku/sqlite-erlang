@@ -7,6 +7,7 @@ Compiling
 
 3. Run 'make static' for dialyzer
 
+4. Run 'make NOTEST=true' for release build.
 
 Running Test Suite
 ------------------
@@ -17,14 +18,14 @@ $ROOT refers to the parent directory for sqlite-1.0.0
 
 2. erl -pa $ROOT/sqlite-1.0.0/ebin
 
-3. ct:run("src").
+3. test:unit().
 
 
 Example Usage
 -------------
 
-Use sqlite-1.0.0/src/test/sqlite_test_SUITE.erl as an example for your own usage. Look at both 
-init_per_testcase and create_table.
+*.erl file has its unit test case function(s).
+eunit test function ends with '_test_'.
 
 
-Author: tty.erlang@gmail.com
+Author: tty.erlang@gmail.com, manywaypark@gmail.com

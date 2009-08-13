@@ -1,3 +1,6 @@
+## usage:
+## just "make" or "make NOTEST=true" for release build.
+
 VERSION=1.0.0
 
 ERL=$(shell which erl)
@@ -11,9 +14,16 @@ PATHS=`erl -eval '$(PROG)' -s init stop -noshell`
 
 INSTALL_DEST=$(BASE)/sqlite-$(VERSION)
 
+ifdef NOTEST
+EMAKE_SRC = Emakefile.release
+else
+EMAKE_SRC = Emakefile.devel
+endif
+
 all: compile docs
 
 compile:
+	cp $(EMAKE_SRC) Emakefile
 	$(ERL) -make
 	cd priv && make
 

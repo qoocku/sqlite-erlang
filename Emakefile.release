@@ -1,0 +1,2 @@
+{'src/sqlite_lib.erl',[{d, 'NOTEST'},{outdir,"ebin"}]}.
+{'src/sqlite.erl',[{d, 'NOTEST'},{outdir,"ebin"}]}.

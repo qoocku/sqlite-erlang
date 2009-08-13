@@ -459,8 +459,8 @@ exec(Port, Cmd) ->
 
 
 parse_table_info(Info) ->
-    [_, Tail] = string:tokens(Info, "()"),
-    Cols = string:tokens(Tail, ","), 
+    [_, Tail] = string:tokens(Info, "\n()"),
+    Cols = string:tokens(lists:flatten(Tail), ","), 
     build_table_info(lists:map(fun(X) ->
 				       string:tokens(X, " ") 
 			       end, Cols), []).
@@ -468,7 +468,40 @@ parse_table_info(Info) ->
 build_table_info([], Acc) -> 
     lists:reverse(Acc);
 build_table_info([[ColName, ColType] | Tl], Acc) -> 
-    build_table_info(Tl, [{list_to_atom(ColName), sqlite_lib:col_type(ColType)}| Acc]); 
+    build_table_info(Tl, [{list_to_atom(ColName), sqlite_lib:col_type(string:to_upper(ColType))}| Acc]);
 build_table_info([[ColName, ColType, "PRIMARY", "KEY"] | Tl], Acc) ->
-    build_table_info(Tl, [{list_to_atom(ColName), sqlite_lib:col_type(ColType)}| Acc]).
+    build_table_info(Tl, [{list_to_atom(ColName), sqlite_lib:col_type(string:to_upper(ColType))}| Acc]).
     
+%%%-------------------------------------------------------------------
+%%% Tests
+%%%-------------------------------------------------------------------
+
+-include_lib("eunit/include/eunit.hrl").
+
+%% from ttyerl's original test
+create_table_test_() ->
+    [
+     ?_assert(element(1, sqlite:open(ct)) =:= ok),
+     ?_assert(sqlite:create_table(ct, user, [{name, text}, {age, integer}, {wage, integer}]) =:= ok),
+     ?_assert(sqlite:list_tables(ct) =:= [user]),
+     ?_assert(sqlite:table_info(ct, user) =:= [{name, text}, {age, integer}, {wage, integer}]),
+     ?_assert(sqlite:write(ct, user, [{name, "abby"}, {age, 20}, {wage, 2000}]) =:= ok),
+     ?_assert(sqlite:write(ct, user, [{name, "marge"}, {age, 30}, {wage, 3000}]) =:= ok),
+     ?_assert(sqlite:sql_exec(ct, "select * from user order by name;") =:= [{"abby","20","2000"},{"marge","30","3000"}]),
+     ?_assert(sqlite:read(ct, user, {name, "abby"}) =:= [{"abby","20","2000"}]),
+     ?_assert(sqlite:delete(ct, user, {name, "abby"}) =:= ok),
+     ?_assert(sqlite:drop_table(ct, user) =:= ok),
+%sqlite:delete_db(ct)                                                           
+     ?_assert(sqlite:close(ct) =:= ok)
+    ].
+
+%% kinda complex table (from ticket table of Trac)
+%% a test case for the patch in http://wiki.github.com/ttyerl/sqlite-erlang/a-patch-for-table_info
+table_info_test_() ->
+    [
+     ?_assert(element(1, sqlite:open(ct)) =:= ok),
+     ?_assert(sqlite:sql_exec(ct, "CREATE TABLE ticket (id integer PRIMARY KEY, type text, time integer, changetime integer, component text, severity text, priority text, owner text, reporter text, cc text, version text, milestone text, status text, resolution text, summary text, description text, keywords text);") =:= ok),
+     ?_assert(sqlite:table_info(ct, ticket) =:= [{id, integer}, {type, text}, {time, integer}, {changetime, integer}, {component, text}, {severity, text}, {priority, text}, {owner, text}, {reporter, text}, {cc, text}, {version, text}, {milestone, text}, {status, text}, {resolution, text}, {summary, text}, {description, text}, {keywords, text}]),
+     ?_assert(sqlite:drop_table(ct, ticket) =:= ok),
+     ?_assert(sqlite:close(ct) =:= ok)
+    ].
