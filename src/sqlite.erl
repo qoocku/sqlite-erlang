@@ -505,3 +505,18 @@ table_info_test_() ->
      ?_assert(sqlite:drop_table(ct, ticket) =:= ok),
      ?_assert(sqlite:close(ct) =:= ok)
     ].
+
+%% to fix the issue at http://github.com/mwpark/sqlite-erlang/issues#issue/1
+select_many_records_test_() ->
+    [
+     ?_assert(element(1, sqlite:open(ct)) =:= ok),
+     ?_assert(sqlite:create_table(ct, foo, [{id, integer}, {name, text}]) =:= ok),
+     ?_assert(lists:foreach(fun(X) -> sqlite:write(ct, foo, [{id, X}, {name, "bar"}]) end, lists:seq(1, 1024)) =:= ok),
+     ?_assert(sqlite:read(ct, foo, {id, 1}) =:= [{"1", "bar"}]),
+     ?_assert(length(sqlite:sql_exec(ct, "select * from foo limit 10;")) =:= 10), 
+     ?_assert(length(sqlite:sql_exec(ct, "select * from foo limit 100;")) =:= 100), 
+     ?_assert(length(sqlite:sql_exec(ct, "select * from foo limit 1000;")) =:= 1000), 
+     ?_assert(length(sqlite:sql_exec(ct, "select * from foo;")) =:= 1024),
+     ?_assert(sqlite:drop_table(ct, foo) =:= ok),
+     ?_assert(sqlite:close(ct) =:= ok)
+    ].

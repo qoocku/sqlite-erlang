@@ -189,10 +189,12 @@ void send_ok()
 
 void respond(ETERM *r) 
 {
-  byte buf[2048];
-  bzero(buf, 2048);
+  int len = erl_term_len(r);
+  byte  *buf = (byte*) malloc(len);
+  bzero(buf, len);
   erl_encode(r, buf);
-  write_cmd(buf, erl_term_len(r));
+  write_cmd(buf, len);
 
   fprintf(log, "sending response back\n");
+  free(buf);
 }
