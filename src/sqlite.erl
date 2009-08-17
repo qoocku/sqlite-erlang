@@ -14,7 +14,7 @@
 -export([open/1, open/2]).
 -export([start_link/1, start_link/2]).
 -export([stop/0, close/1]).
--export([sql_exec/1, sql_exec/2]).
+-export([sql_exec/1, sql_exec/2, sql_exec/3]).
 
 -export([create_table/2, create_table/3]).
 -export([list_tables/0, list_tables/1, table_info/1, table_info/2]).
@@ -141,9 +141,16 @@ sql_exec(SQL) ->
 %%   result of the Sql call.
 %% @end
 %%--------------------------------------------------------------------
--spec(sql_exec/2::(atom(), string()) -> any()).
-sql_exec(Db, SQL) ->
-    gen_server:call(Db, {sql_exec, SQL}).
+-spec(sql_exec/2::(atom() | string(), string() | integer()) -> any()).
+sql_exec(SQL, Timeout) when is_list(SQL), is_integer(Timeout) ->
+    ?MODULE:sql_exec(?MODULE, SQL, Timeout);
+
+sql_exec(Db, SQL) when is_atom(Db), is_list(SQL) ->
+     gen_server:call(Db, {sql_exec, SQL}).
+ 
+-spec(sql_exec/3::(atom(), string(), integer()) -> any()).
+sql_exec(Db, SQL, Timeout) ->
+    gen_server:call(Db, {sql_exec, SQL}, Timeout).
 
 %%--------------------------------------------------------------------
 %% @spec create_table(Tbl::atom(), TblInfo::[tuple()]) -> term()
@@ -327,7 +334,7 @@ drop_table(Db, Tbl) ->
 -spec(init/1::([any()]) -> init_return()).
 init(Options) ->
     Dbase = proplists:get_value(db, Options),
-    Port = open_port({spawn, create_cmd(Dbase)}, [{packet, 2}, binary]),
+    Port = open_port({spawn, create_cmd(Dbase)}, [{packet, 4}, binary]),
     {ok, #state{port = Port, ops = Options}}.
 		     
 %%--------------------------------------------------------------------
@@ -520,3 +527,4 @@ select_many_records_test_() ->
      ?_assert(sqlite:drop_table(ct, foo) =:= ok),
      ?_assert(sqlite:close(ct) =:= ok)
     ].
+
