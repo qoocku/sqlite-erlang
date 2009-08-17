@@ -12,14 +12,14 @@ Compiling
 Running Test Suite
 ------------------
 
-$ROOT refers to the parent directory for sqlite-1.0.0
+Run 'make test' for unit testing.
 
-1. Add $ROOT/sqlite-1.0.0/priv in your path.
+Install
+-------
 
-2. erl -pa $ROOT/sqlite-1.0.0/ebin
+1. Run 'make clean' to remove previous build w/ debug info and tests.
 
-3. test:unit().
-
+2. Run 'make NOTEST=true install' as root.
 
 Example Usage
 -------------

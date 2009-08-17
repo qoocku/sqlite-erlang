@@ -38,9 +38,13 @@ static:
 
 clean:
 	- rm -rf ebin/*.beam doc/* sqlite.plt src/test/*.beam
-	- rm -rf ct_run* all_runs.html variables* index.html
+	- rm -rf ct.db
 	find . -name "*~" | xargs rm
 	cd priv && make clean
 
 docs:
 	$(ERL) -noshell -run edoc_run application "'sqlite'" '"."' '[{title,"Welcome to sqlite"},{hidden,false},{private,false}]' -s erlang halt
+
+test: compile
+	- rm -rf ct.db
+	$(ERL) -pa ./ebin -noshell -run test unit -s erlang halt
