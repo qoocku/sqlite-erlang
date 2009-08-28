@@ -196,5 +196,6 @@ void respond(ETERM *r)
   write_cmd(buf, len);
 
   fprintf(log, "sending response back\n");
+  fprintf(log, "%d bytes sent\n", len);
   free(buf);
 }

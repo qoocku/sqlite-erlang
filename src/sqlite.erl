@@ -360,7 +360,7 @@ handle_call({sql_exec, SQL}, _From, #state{port = Port} = State) ->
     {reply, Reply, State};
 handle_call(list_tables, _From, #state{port = Port} = State) ->
     Reply = exec(Port, {list_tables, none}),
-    {reply, Reply, State};
+    {reply, to_list(Reply), State};
 handle_call({table_info, Tbl}, _From, #state{port = Port} = State) ->
     % make sure we only get table info.
     % SQL Injection warning
@@ -478,7 +478,12 @@ build_table_info([[ColName, ColType] | Tl], Acc) ->
     build_table_info(Tl, [{list_to_atom(ColName), sqlite_lib:col_type(string:to_upper(ColType))}| Acc]);
 build_table_info([[ColName, ColType, "PRIMARY", "KEY"] | Tl], Acc) ->
     build_table_info(Tl, [{list_to_atom(ColName), sqlite_lib:col_type(string:to_upper(ColType))}| Acc]).
-    
+
+to_list(ok) ->    
+    [];
+to_list(L) ->
+    L.
+
 %%%-------------------------------------------------------------------
 %%% Tests
 %%%-------------------------------------------------------------------
@@ -489,6 +494,7 @@ build_table_info([[ColName, ColType, "PRIMARY", "KEY"] | Tl], Acc) ->
 create_table_test_() ->
     [
      ?_assert(element(1, sqlite:open(ct)) =:= ok),
+     ?_assert(sqlite:list_tables(ct) =:= []),
      ?_assert(sqlite:create_table(ct, user, [{name, text}, {age, integer}, {wage, integer}]) =:= ok),
      ?_assert(sqlite:list_tables(ct) =:= [user]),
      ?_assert(sqlite:table_info(ct, user) =:= [{name, text}, {age, integer}, {wage, integer}]),
