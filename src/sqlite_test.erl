@@ -1,11 +1,11 @@
 %%%-------------------------------------------------------------------
-%%% File    : test.erl
+%%% File    : sqlite_test.erl
 %%% Author  : manywaypark <manywaypark@gmail.com>
 %%% Description : some test codes.
 %%%
 %%% Created : 11 Aug 2008 by manywaypark <manywaypark@gmail.com>
 %%%-------------------------------------------------------------------
--module(test).
+-module(sqlite_test).
 
 -compile(export_all).
 

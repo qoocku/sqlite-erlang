@@ -14,7 +14,7 @@ PATHS=`erl -eval '$(PROG)' -s init stop -noshell`
 
 INSTALL_DEST=$(BASE)/sqlite-$(VERSION)
 
-ifdef NOTEST
+ifndef TEST
 EMAKE_SRC = Emakefile.release
 else
 EMAKE_SRC = Emakefile.devel
